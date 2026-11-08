@@ -1,0 +1,37 @@
+{
+  "nsHalfWidth": 8,
+  "ewHalfWidth": 5,
+  "armLength": 70,
+  "crosswalkWidth": 4,
+  "crosswalkSetback": 1,
+  "curbRadius": 3,
+  "island": false,
+  "crosswalkRetreat": false,
+  "crosswalkRetreatExtra": 5,
+  "guideLine": false,
+  "education": false,
+  "islandBox": {
+    "cx": -12.25,
+    "cz": 0,
+    "hw": 0.45,
+    "hl": 1.05,
+    "yaw": -1.56159265358979
+  },
+  "waitingCar": {
+    "x": -1.3,
+    "z": -4.35,
+    "yaw": -2.62159265358979
+  },
+  "pedWalkSpeed": 2,
+  "pedBearingDeg": 25,
+  "right": -0.26,
+  "up": 1.2,
+  "forward": 0.26,
+  "pitchDeg": 0,
+  "fov": 75,
+  "editorCamSpeed": 29.574869852289094,
+  "pedSpawnDistance": 3,
+  "pedLockBias": -0.0499999999999999,
+  "pedEarlySpawnDistance": 8,
+  "pedBlindBearingDeg": 30
+}

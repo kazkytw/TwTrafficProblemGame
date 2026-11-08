@@ -1,0 +1,27 @@
+{
+  "nsHalfWidth": 8,
+  "ewHalfWidth": 3.2,
+  "armLength": 70,
+  "crosswalkWidth": 4,
+  "crosswalkSetback": 1,
+  "curbRadius": 3,
+  "island": false,
+  "crosswalkRetreat": false,
+  "crosswalkRetreatExtra": 5,
+  "guideLine": false,
+  "education": false,
+  "islandBox": {
+    "cx": -11,
+    "cz": 0,
+    "hw": 0.6,
+    "hl": 4,
+    "yaw": 1.5708
+  },
+  "waitingCar": {
+    "x": -2,
+    "z": -1,
+    "yaw": 3.141592653589793
+  },
+  "pedWalkSpeed": 1.4,
+  "pedBearingDeg": 25
+}
