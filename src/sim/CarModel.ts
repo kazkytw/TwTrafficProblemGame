@@ -126,7 +126,7 @@ export const DEFAULT_EYE = { right: -0.32, up: 1.2, forward: 0.3, pitchDeg: 0, f
 export async function loadPlayerCar(savedEye?: Partial<typeof DEFAULT_EYE>, savedMirror?: Partial<typeof SIDE_MIRROR>): Promise<boolean> {
   if (savedMirror) Object.assign(SIDE_MIRROR, savedMirror);
   try {
-    const gltf = await new GLTFLoader().loadAsync('/models/sedan.glb');
+    const gltf = await new GLTFLoader().loadAsync(import.meta.env.BASE_URL + 'models/sedan.glb');
     const inner = gltf.scene;
     let body: THREE.Mesh | null = null;
     inner.traverse((o) => {

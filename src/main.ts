@@ -10,21 +10,23 @@ import { createEditor } from './dev/EditorMode';
 import { loadPlayerCar } from './sim/CarModel';
 
 // geometry saved by the editor (public/intersection.json); toggles always start off
-const saved = await fetch('/intersection.json', { cache: 'no-store' })
+const base = import.meta.env.BASE_URL;
+const saved = await fetch(`${base}intersection.json`, { cache: 'no-store' })
   .then((r) => (r.ok ? r.json() : {}))
   .catch(() => ({}));
-const savedEye = await fetch('/driver-eye.json', { cache: 'no-store' })
+const savedEye = await fetch(`${base}driver-eye.json`, { cache: 'no-store' })
   .then((r) => (r.ok ? r.json() : undefined))
   .catch(() => undefined);
-const savedMirror = await fetch('/side-mirror.json', { cache: 'no-store' })
+const savedMirror = await fetch(`${base}side-mirror.json`, { cache: 'no-store' })
   .then((r) => (r.ok ? r.json() : undefined))
   .catch(() => undefined);
 await loadPlayerCar(savedEye, savedMirror);
 const game = createGame({ ...saved, island: false, crosswalkRetreat: false, guideLine: false, education: false });
 const { ctx } = game;
 game.start();
-const editor = createEditor(game);
-if (new URLSearchParams(location.search).get('edit') === '1') {
+// editor needs the dev server's /__save-config endpoint, so it is dev-only (stripped from production builds)
+const editor = import.meta.env.DEV ? createEditor(game) : undefined;
+if (editor && new URLSearchParams(location.search).get('edit') === '1') {
   ctx.rig.set({ pos: new THREE.Vector3(0, 70, 22), lookAt: new THREE.Vector3(0, 0, -2), fov: 70 });
   editor.toggle(true);
 }
@@ -46,7 +48,7 @@ async function main() {
       education: startAt >= 4,
     },
   };
-  if (editor.active) {
+  if (editor?.active) {
     // pure scene-inspection mode: no story, just the free camera
     return;
   }

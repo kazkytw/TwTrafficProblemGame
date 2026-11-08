@@ -38,4 +38,4 @@ function saveConfigPlugin(): Plugin {
   };
 }
 
-export default defineConfig({ plugins: [saveConfigPlugin()] });
+export default defineConfig({ base: './', plugins: [saveConfigPlugin()] });

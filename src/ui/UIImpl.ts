@@ -39,7 +39,6 @@ const CSS = `
 .tw-news{z-index:11;background:#000;opacity:0;transition:opacity 450ms ease;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.4em}
 .tw-news .frame{position:relative;width:min(66vw,calc(62vh * 16 / 9));aspect-ratio:16/9;overflow:hidden;
   background:linear-gradient(180deg,#8c9aa0 0%,#6b7a76 45%,#3d4a46 70%,#2a3330 100%)}
-.tw-news .frame .pic{position:absolute;inset:0;background:url('/news.jpg') center/cover no-repeat}
 .tw-news .logo{position:absolute;right:3%;top:4%;background:#fff;color:#c4161c;font-weight:900;font-size:clamp(.8rem,1.5vw,1.3rem);
   padding:.1em .7em;letter-spacing:.1em;border-radius:.2em;border-bottom:.2em solid #c4161c;box-shadow:0 2px 6px rgba(0,0,0,.5)}
 .tw-news .l3{position:absolute;left:0;right:0;bottom:0;font-size:clamp(.8rem,1.6vw,1.5rem)}
@@ -234,7 +233,6 @@ export function createUI(root: HTMLElement): UI {
       return cardQ(async () => {
         const el = mk('tw-layer tw-news');
         const frame = mk('frame', el);
-        mk('pic', frame);
         mk('logo', frame).textContent = 'ㄙ見新聞台';
         const l3 = mk('l3', frame);
         const row = mk('row', l3);
@@ -255,7 +253,7 @@ export function createUI(root: HTMLElement): UI {
         await raf2();
         el.style.opacity = '1';
         // news voice-over: the cut only ends once it has finished playing (and the minimum hold has passed)
-        const voice = new Audio('/news.mp3');
+        const voice = new Audio(import.meta.env.BASE_URL + 'news.mp3');
         const voiceDone = new Promise<void>((resolve) => {
           voice.addEventListener('ended', () => resolve());
           voice.addEventListener('error', () => resolve());
