@@ -37,24 +37,23 @@ const CSS = `
 @keyframes tw-flick{0%{opacity:.85}50%{opacity:1}100%{opacity:.7}}
 @keyframes tw-blink{0%{opacity:1}50%{opacity:.25}100%{opacity:1}}
 .tw-news{z-index:11;background:#000;opacity:0;transition:opacity 450ms ease;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.4em}
-.tw-news .frame{position:relative;width:min(66vw,calc(62vh * 16 / 9));aspect-ratio:16/9;overflow:hidden;
+.tw-news .frame{container-type:inline-size;position:relative;width:min(66vw,calc(62vh * 16 / 9));aspect-ratio:16/9;overflow:hidden;
   background:linear-gradient(180deg,#8c9aa0 0%,#6b7a76 45%,#3d4a46 70%,#2a3330 100%)}
 .tw-news .logo{position:absolute;right:3%;top:4%;background:#fff;color:#c4161c;font-weight:900;font-size:clamp(.8rem,1.5vw,1.3rem);
   padding:.1em .7em;letter-spacing:.1em;border-radius:.2em;border-bottom:.2em solid #c4161c;box-shadow:0 2px 6px rgba(0,0,0,.5)}
-.tw-news .l3{position:absolute;left:0;right:0;bottom:0;font-size:clamp(.8rem,1.6vw,1.5rem)}
+.tw-news .l3{position:absolute;left:0;right:0;bottom:0;font-size:2.3cqw}
 .tw-news .row{display:flex;align-items:stretch;height:3.4em}
-.tw-news .side{flex:0 0 22%;background:linear-gradient(90deg,#c4161c 0 40%,#e6e6e6 40%);
-  clip-path:polygon(0 0,100% 0,88% 100%,0 100%);display:flex;flex-direction:column;justify-content:center;padding:0 1em;
-  color:#222;font-weight:700;line-height:1.1}
-.tw-news .side small{color:#c4161c;font-size:.8em}
-.tw-news .main{flex:1;background:#fff;color:#111;position:relative;display:flex;align-items:center;padding:0 1em .1em 1.2em;
-  font-weight:900;font-size:1.45em;letter-spacing:.04em;white-space:nowrap;overflow:hidden;margin-left:-6%;clip-path:polygon(4% 0,100% 0,100% 100%,0 100%);
-  text-shadow:1px 1px 0 rgba(0,0,0,.15)}
-.tw-news .place{position:absolute;left:24%;top:-1.5em;background:#fff;color:#111;font-size:.85em;font-weight:800;
+.tw-news .side{flex:0 0 16%;box-sizing:border-box;min-width:0;background:#c4161c;
+  display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 .4em;
+  color:#fff;font-weight:900;line-height:1.15;white-space:nowrap;font-size:1.5em;letter-spacing:.1em}
+.tw-news .side small{color:#fff;font-size:.8em}
+.tw-news .main{flex:1;min-width:0;background:#fff;color:#111;position:relative;display:flex;align-items:center;padding:0 .8em .1em 1.6em;
+  font-weight:900;font-size:1.45em;letter-spacing:.04em;white-space:nowrap;overflow:hidden;  text-shadow:1px 1px 0 rgba(0,0,0,.15)}
+.tw-news .place{position:absolute;left:16%;top:-1.5em;background:#fff;color:#111;font-size:.85em;font-weight:800;
   padding:0 1.6em 0 1em;clip-path:polygon(0 0,90% 0,100% 100%,0 100%);height:1.7em;display:flex;align-items:center}
 .tw-news .tick{display:flex;align-items:stretch;height:1.9em;background:#16286b;color:#fff;font-weight:700}
-.tw-news .tick .lb{flex:none;background:#c4161c;padding:0 1em;display:flex;align-items:center;letter-spacing:.1em;font-size:.85em}
-.tw-news .tick .tx{flex:1;display:flex;align-items:center;padding:0 1em;font-size:1.05em;letter-spacing:.08em;white-space:nowrap;overflow:hidden}
+.tw-news .tick .lb{flex:0 0 16%;box-sizing:border-box;background:#6b6f76;padding:0 .4em;display:flex;align-items:center;justify-content:center;white-space:nowrap;letter-spacing:.1em;font-size:.85em}
+.tw-news .tick .tx{flex:1;min-width:0;display:flex;align-items:center;padding:0 1em;font-size:1.05em;letter-spacing:.08em;white-space:nowrap;overflow:hidden}
 .tw-news .anc{display:flex;align-items:center;gap:.7em;justify-content:center;width:min(66vw,calc(62vh * 16 / 9));text-align:center;font-size:1.4rem;line-height:1.5;
   min-height:3.2em}
 .tw-news .anc .tx{text-align:center;white-space:pre-line}
@@ -170,20 +169,29 @@ export function createUI(root: HTMLElement): UI {
   let playEl: HTMLElement | null = null;
 
   const ui: UI = {
-    narration(text, holdMs = Math.min(6000, Math.max(1800, 1000 + 120 * text.length))) {
+    narration(text, holdMs = Math.min(6000, Math.max(1800, 1000 + 120 * text.length)), sub?: string, fadeMs = 400) {
       return narrQ(async () => {
         const my = epoch;
         const el = mk('tw-layer tw-narr');
-        el.textContent = text;
+        el.style.transitionDuration = `${fadeMs}ms`;
+        if (sub) {
+          el.style.flexDirection = 'column';
+          mk('', el, 'div').textContent = text;
+          const s = mk('', el, 'div');
+          s.textContent = sub;
+          s.style.cssText = 'font-size:1rem;opacity:.65;margin-top:1.6em;letter-spacing:.08em';
+        } else {
+          el.textContent = text;
+        }
         if (!blackOn) {
           setBlackStyle(true, 400);
           await sleep(400);
         }
         await raf2();
         el.style.opacity = '1';
-        await sleep(400 + holdMs);
+        await sleep(fadeMs + holdMs);
         el.style.opacity = '0';
-        await sleep(400);
+        await sleep(fadeMs);
         el.remove();
         void my;
       });
@@ -237,13 +245,11 @@ export function createUI(root: HTMLElement): UI {
         const l3 = mk('l3', frame);
         const row = mk('row', l3);
         const side = mk('side', row);
-        mk('', side, 'small').textContent = '今日清晨';
-        mk('', side, 'span').textContent = '11:11';
+        mk('', side, 'span').textContent = '最新';
         const main = mk('main', row);
-        mk('place', l3).textContent = '○○區 ○○路口';
         mk('', main, 'span').textContent = headline;
         const tick = mk('tick', l3);
-        mk('lb', tick).textContent = '行人遭撞';
+        mk('lb', tick).textContent = '11:11';
         mk('tx', tick).textContent = '行人遭左轉小客車撞擊送醫　駕駛稱沒看到人　警方調查中';
         const anc = mk('anc', el);
         mk('tw-chip anchor', anc, 'span').textContent = roleLabel.anchor;

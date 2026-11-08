@@ -142,7 +142,8 @@ export type SubtitleKind = 'narration' | 'pedestrian' | 'driver' | 'anchor';
 
 export interface UI {
   /** Black screen, big centred white text. Resolves after it was shown for `holdMs` and faded out. */
-  narration(text: string, holdMs?: number): Promise<void>;
+  /** `sub` renders as a small line under the main text (e.g. data source). */
+  narration(text: string, holdMs?: number, sub?: string, fadeMs?: number): Promise<void>;
   /** Bottom small subtitle with a role label. Resolves after hold. kind: pedestrian | driver | anchor */
   say(kind: Exclude<SubtitleKind, 'narration'>, text: string, holdMs?: number): Promise<void>;
   /** Big centred card (news headline / final fact). Fade in/out. */

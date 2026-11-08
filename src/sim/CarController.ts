@@ -8,7 +8,7 @@ import type { CarParams, CarState, DriveInput, Obb } from '../types';
  * yaw convention: heading = (-sin yaw, -cos yaw); +yaw = left turn.
  */
 export const defaultCarParams: CarParams = {
-  maxSpeed: 14, // m/s (~50 km/h)
+  maxSpeed: 7, // m/s (~25 km/h), hard cap (see update())
   accel: 3.2, // m/s^2 at standstill (fades towards maxSpeed)
   brake: 9, // m/s^2 (S key)
   drag: 0.8, // m/s^2 constant coasting deceleration (plus CAR_TUNING.dragPerSpeed * v)
@@ -100,7 +100,7 @@ export class CarController {
       acc = -(p.drag + CAR_TUNING.dragPerSpeed * st.speed);
     }
     if (this.autoLevel > 0) acc = Math.min(acc, -CAR_TUNING.autoStopDecel * this.autoLevel);
-    st.speed = Math.max(0, st.speed + acc * dt); // never negative: S never reverses
+    st.speed = Math.min(p.maxSpeed, Math.max(0, st.speed + acc * dt)); // never negative (S never reverses), never above the cap
     if (st.speed < 0.02 && acc < 0) st.speed = 0;
 
     // --- yaw (bicycle) ---

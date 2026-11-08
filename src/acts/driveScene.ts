@@ -26,6 +26,8 @@ export const START = { z: 46, yaw: 0, speed: 3 };
 export const startState = (c: Parameters<typeof lanes>[0]) => ({ x: lanes(c).nsInner, z: START.z, yaw: START.yaw, speed: 0, steer: 0 });
 /** Distance (m) from the west-crosswalk centre at which the pedestrian is spawned in blind mode. */
 export const SPAWN_DISTANCE = 12;
+/** Act 4: max distance (m) from the crosswalk's near edge to the front bumper for a stop to count as yielding. */
+export const YIELD_ZONE = 3;
 
 /**
  * One attempt of the driver scene. Resolves with the outcome. The caller handles
@@ -69,6 +71,7 @@ export async function driveAttempt(ctx: GameContext, opt: DriveOptions): Promise
 
   let outcome: DriveOutcome | null = null;
   let stopped = 0;
+  let wrongStop = 0;
   const off = ctx.onUpdate((dt) => {
     if (outcome) return;
     const inp = { w: input.w, a: input.a, s: input.s, d: input.d };
@@ -107,7 +110,10 @@ export async function driveAttempt(ctx: GameContext, opt: DriveOptions): Promise
     else if (world.obstacles.some((o) => o.tag === 'island' && obbOverlap(box, o.box))) {
       // the west island (cx < 0, on the E-W axis) is the one next to the story's crosswalk
       const west = world.obstacles.some((o) => o.tag === 'island' && o.box.cx < -1 && Math.abs(o.box.cx) > Math.abs(o.box.cz) && obbOverlap(box, o.box));
-      hit = west ? 'islandWest' : 'island';
+      // car centre already on the eastbound (south) half of the west arm => it drove into the opposing lane:
+      // same "靠右行駛" handling as without the island (act 2), not the "hit the island, not the person" line
+      const opposing = west && st.z > 0 && st.x < -world.config.nsHalfWidth;
+      hit = opposing ? 'wrongSide' : west ? 'islandWest' : 'island';
     } else if (!world.onRoad({ x: st.x, z: st.z })) hit = 'offroad';
     else if (
       // wrong direction of travel: U-turn in the south arm, straight on into the north arm, right turn into the east arm
@@ -118,12 +124,15 @@ export async function driveAttempt(ctx: GameContext, opt: DriveOptions): Promise
     else if (
       // drove onto the opposing side of the road: south arm southbound lanes / west arm eastbound lane
       (st.z > world.config.ewHalfWidth + 2 && st.x < -1) ||
-      (st.x < -(world.config.nsHalfWidth + 2) && st.z > 1)
+      (st.x < -world.config.nsHalfWidth && st.z > 0) ||
+      // came to rest in the oncoming half after turning (no collision would ever end the attempt otherwise)
+      (st.yaw > 1.0 && st.z > 0 && st.speed < 0.05 && (wrongStop += dt) > 0.4)
     ) hit = 'wrongSide';
     else if (spawner.pedestrian && spawner.hitTest(box)) {
-      // hit before the pedestrian got past 1/3 of the crosswalk => the car was in the wrong (oncoming) lane
+      // car centre in the oncoming (eastbound) half of the west arm, or hit before the pedestrian got past 1/3
+      // of the crosswalk => the car was in the wrong (oncoming) lane
       const prog = (cw.south.z - spawner.pedestrian.pos.z) / (cw.south.z - cw.north.z);
-      hit = prog < 1 / 3 ? 'wrongSide' : 'pedestrian';
+      hit = st.z > 0 || prog < 1 / 3 ? 'wrongSide' : 'pedestrian';
     }
     // blind mode safety net: car drove through the crosswalk without hitting -> still the story's accident
     else if (opt.mode === 'blind' && spawned && st.x < cwX - cw.width / 2 - 2 && spawner.pedestrian) hit = 'pedestrian';
@@ -132,10 +141,13 @@ export async function driveAttempt(ctx: GameContext, opt: DriveOptions): Promise
       outcome = { kind: 'crash', cause: hit };
       return;
     }
-    if (opt.mode === 'early' && spawner.pedestrian && st.speed < 0.05 && st.yaw > 1.0) {
+    // act 4 success = stopped in front of the crosswalk. Only counts when the bumper is within YIELD_ZONE of the
+    // crosswalk's near edge (the auto-brake above is unchanged), so stopping back at the island doesn't count.
+    const frontX = st.x + -Math.sin(st.yaw) * 2.3;
+    if (opt.mode === 'early' && spawner.pedestrian && st.speed < 0.05 && st.yaw > 1.0 && st.z <= 0 && frontX - nearEdgeX <= YIELD_ZONE) {
       stopped += dt;
       if (stopped > 0.4) outcome = { kind: 'stopped' };
-    }
+    } else stopped = 0;
 
     if (opt.debugDraw && ctx.debug.enabled) {
       const dd = opt.debugDraw;
@@ -172,7 +184,7 @@ export function crashMessage(cause: CollisionKind): string {
   switch (cause) {
     case 'oncoming': return '撞到車了，再試一次吧';
     case 'median': return '你駕駛技術不太好喔，再試一次吧';
-    case 'islandWest': return '還好撞到的是島不是人';
+    case 'islandWest': return '還好撞到的是島，不是人。';
     case 'island': return '不小心撞到島了，再試一次吧';
     case 'offroad': return '你要開去哪= =?';
     case 'wrongSide': return '這裡不是日本餒，靠右行駛喔';
