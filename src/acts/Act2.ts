@@ -48,7 +48,7 @@ export const act2: Act = {
         ui.setBlack(true);
         res.cleanup();
         await ctx.wait(900);
-        await ui.narration('他看了。只是，在他的位置，確實看不到。', 3600);
+        await ui.narration('他看了。只是在他的視角，的確看不到。', 3600);
         await ui.narration('他確實有責任，但這個路口，也有值得改進的地方。', 4000);
         // rewind to a bird's eye view
         ui.setBlack(false);

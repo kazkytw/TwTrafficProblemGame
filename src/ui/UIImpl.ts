@@ -12,7 +12,7 @@ const CSS = `
   text-shadow:0 3px 16px #000;letter-spacing:.05em}
 .tw-sub{position:absolute;left:50%;bottom:5%;transform:translateX(-50%);z-index:11;max-width:80%;
   display:flex;align-items:center;gap:.7em;background:rgba(0,0,0,.62);padding:.5em 1.1em;border-radius:.5em;
-  font-size:1.1rem;line-height:1.5;opacity:0;transition:opacity 250ms ease;box-sizing:border-box}
+  font-size:1.4rem;line-height:1.5;opacity:0;transition:opacity 250ms ease;box-sizing:border-box}
 .tw-chip{flex:none;font-size:.8em;font-weight:700;padding:.1em .6em;border-radius:1em;color:#fff}
 .tw-chip.pedestrian{background:#e8a317;color:#222}
 .tw-chip.driver{background:#2f7fd8}
@@ -56,7 +56,7 @@ const CSS = `
 .tw-news .tick{display:flex;align-items:stretch;height:1.9em;background:#16286b;color:#fff;font-weight:700}
 .tw-news .tick .lb{flex:none;background:#c4161c;padding:0 1em;display:flex;align-items:center;letter-spacing:.1em;font-size:.85em}
 .tw-news .tick .tx{flex:1;display:flex;align-items:center;padding:0 1em;font-size:1.05em;letter-spacing:.08em;white-space:nowrap;overflow:hidden}
-.tw-news .anc{display:flex;align-items:center;gap:.7em;justify-content:center;width:min(66vw,calc(62vh * 16 / 9));text-align:center;font-size:clamp(1rem,1.7vw,1.5rem);line-height:1.6;
+.tw-news .anc{display:flex;align-items:center;gap:.7em;justify-content:center;width:min(66vw,calc(62vh * 16 / 9));text-align:center;font-size:1.4rem;line-height:1.5;
   min-height:3.2em}
 .tw-news .anc .tx{text-align:center;white-space:pre-line}
 .tw-cards{position:absolute;left:50%;bottom:0;transform:translateX(-50%);z-index:9;display:flex;justify-content:center;
@@ -254,7 +254,16 @@ export function createUI(root: HTMLElement): UI {
         hideSay();
         await raf2();
         el.style.opacity = '1';
-        await sleep(450 + holdMs);
+        // news voice-over: the cut only ends once it has finished playing (and the minimum hold has passed)
+        const voice = new Audio('/news.mp3');
+        const voiceDone = new Promise<void>((resolve) => {
+          voice.addEventListener('ended', () => resolve());
+          voice.addEventListener('error', () => resolve());
+          setTimeout(resolve, 60000); // safety net if playback stalls
+          voice.play().catch(() => resolve()); // autoplay blocked / load failure: fall back to the timer
+        });
+        await Promise.all([sleep(450 + holdMs), voiceDone]);
+        voice.pause();
         el.style.opacity = '0';
         await sleep(450);
         el.remove();
