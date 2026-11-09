@@ -43,7 +43,7 @@ export const TrafficParams: TrafficParamsShape = {
   // northbound outer lane; dense, so the oncoming left-turner never finds a gap
   sameDir: { laneX: 5.1, dir: -1, speed: 8, headway: 1.6, jitter: 0.5, enabled: true },
   // southbound outer (straight) lane; slower than before, with gaps
-  oncoming: { laneX: -6, dir: 1, speed: 5.5, headway: 6, jitter: 4, enabled: true },
+  oncoming: { laneX: -6, dir: 1, speed: 5.5, headway: 3.5, jitter: 3, enabled: true },
   // the oncoming left-turner waits in the southbound inner (left-turn) lane, inside the box
   waitingCarPos: { x: -1.7, z: -1.0, yaw: Math.PI },
   waitingCarEnabled: true,
